@@ -2,9 +2,9 @@
 
 how to set up
 
-1. this macro requires a monitor scale of 100% and a 1920x1080 monitor because IT WONT'T WORK
-   because of stuff in the game being smaller or bigger between scale, this will probably apply
-   for your character's age and whatever.
+1. this macro requires a monitor scale of 100% and a 1920x1080 monitor because IT WON'T WORK.
+   because of stuff in the game being smaller or bigger depending on your scale/resolution, this will probably apply
+   for your character's age and whatever, tutorial whenever this is finished
    
 2. this will need a specifc build at your plot because of rotation purposes. there will be a video
    tutorial at some point because this is a WORK ON PROGRESS
