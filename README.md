@@ -2,7 +2,7 @@
 
 how to set up
 
-1. this macro requires a monitor scale of 100% and a 1920x1080 monitor because IT WON'T WORK.
+1. this macro requires a monitor scale of 100% and a 1920x1080 monitor because IT WON'T WORK (also your screen has to be full screen).
    because of stuff in the game being smaller or bigger depending on your scale/resolution, this will probably apply
    for your character's age and whatever, tutorial whenever this is finished
    
