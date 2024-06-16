@@ -216,10 +216,41 @@ ClickAt(x, y) {
     Click "Down"
     Click "Up"
 }
+
+RotateCamera(direction:=0, amount:=0) { ; direction, left:=1, right:=0
+    ActivateRoblox()
+    hwnd:=GetRobloxHWND()
+    GetRobloxClientPos(hwnd)
+    MouseMove((windowX+windowWidth)/2, (windowY+windowHeight)/2)
+    MouseGetPos(&xx,&yy)
+    Click "Down R"
+    sleep 100
+    loop 50*amount {
+        if !(direction=1)
+            DllCall("user32.dll\mouse_event", "UInt", 0x0001, "Int", 5, "Int", 0)
+        else
+            DllCall("user32.dll\mouse_event", "UInt", 0x0001, "Int", -5, "Int", 0)
+    }
+    sleep 100
+    Click "Up R"
+    MouseMove(xx,yy)
+}
+
+CameraUp() { ; this can be done better but this is future proofing
+    ActivateRoblox()
+    hwnd:=GetRobloxHWND()
+    GetRobloxClientPos(hwnd)
+    MouseMove((windowX+windowWidth)/2, (windowY+windowHeight)/2)
+    Click "Down R"
+    MouseGetPos(&xx,&yy)
+    MouseMove(xx,yy+20)
+    Click "Up R"
+}
+
 ;;;;;
 ; HOTKEYS
 ;;;;;
-
+/*
 F1::{
     loop {
         HyperSleep(100)
@@ -229,6 +260,8 @@ F1::{
         HyperSleep(100)
     }
 }
-F2::Pause
+    */
+F1::CameraUp
+F2::Pause -1
 F3::Reload
 F4::ExitApp
