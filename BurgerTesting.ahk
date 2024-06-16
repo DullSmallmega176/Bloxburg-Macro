@@ -250,18 +250,14 @@ CameraUp() { ; this can be done better but this is future proofing
 ;;;;;
 ; HOTKEYS
 ;;;;;
-/*
+
 F1::{
     loop {
         HyperSleep(100)
-        BurgerAction()
-        SidesAction()
-        DrinkAction()
+	@@ -229,6 +260,8 @@ F1::{
         HyperSleep(100)
     }
 }
-    */
-F1::CameraUp
-F2::Pause -1
+F2::Pause
 F3::Reload
 F4::ExitApp
