@@ -42,54 +42,29 @@ msgbox "loaded"
 ClickItem(item, times:=0, size:="") { ; times is only used for burger toppings, size is only used for sides and drinks
     switch item {
         case "lettuce":
-            MouseMove(1660, 685)
-            Click "Down"
-            Click "Up"
-            HyperSleep(250)
-
+            ClickAt(1660, 685)
         case "tomato":
-            MouseMove(1660, 610)
-            Click "Down"
-            Click "Up"
-            HyperSleep(250)
+            ClickAt(1660, 610)
         case "beef":
-            MouseMove(1616, 538)
-            Click "Down"
-            Click "Up"
-            HyperSleep(250)
+            ClickAt(1616, 538) 
         case "veggie":
-            MouseMove(1702, 538)
-            Click "Down"
-            Click "Up"
-            HyperSleep(250)
+            ClickAt(1702, 538) 
         case "cheese":
-            MouseMove(1660, 474)
-            Click "Down"
-            Click "Up"
-            HyperSleep(250)
+            ClickAt(1660, 474)
         case "onion":
-            MouseMove(1660, 409)
-            Click "Down"
-            Click "Up"
-            HyperSleep(250)
+            ClickAt(1660, 409)
         case "fries", "drink":
-            MouseMove(1600, 420)
-            Click "Down"
-            Click "Up"
+            ClickAt(1600, 420)
             ClickSize(size)
         case "sticks", "juice":
-            MouseMove(1600, 544)
-            Click "Down"
-            Click "Up"
+            ClickAt(1600, 544)
             ClickSize(size)
         case "rings", "shake":
-            MouseMove(1600, 660)
-            Click "Down"
-            Click "Up"
+            ClickAt(1600, 660)
             ClickSize(size)
         
     }
-    if times=2 {
+    if (times=2) {
         HyperSleep(250)
         Click "Down"
         Click "Up"
@@ -116,38 +91,30 @@ FindSize() { ; this can probably be improved
 FindAmount(x, y) { ; this can probably be improved
     global bitmaps
     amount:=["1","2"]
-    BigTotal:=0
+    BT:=0
     ActivateRoblox()
     hwnd:=GetRobloxHWND()
     GetRobloxClientPos(hwnd)
     pBMScreen := Gdip_BitmapFromScreen(((windowX+windowWidth)/2)-500+x "|" ((windowY+windowHeight)/2)-300+y "|100|100")
     for i in amount {
         if (Gdip_ImageSearch(pBMScreen, bitmaps[i], , , , , , 20)) {
-            BigTotal:=i ; this is where it's clarified how many burger patties or toppings to add for the corresponding item
+            BT:=i ; this is where it's clarified how many burger patties or toppings to add for the corresponding item
         }
     }
     Gdip_DisposeImage(pBMScreen)
-    return BigTotal
+    return BT
 }
 
 ClickSize(size) { ; didn't want to create a whole thing on the sides and drinks section
     switch size {
         case "small":
-            MouseMove(1730, 420)
-            Click "Down"
-            Click "Up"
+            ClickAt(1730, 420)
         case "medium":
-            MouseMove(1730, 544)
-            Click "Down"
-            Click "Up"
+            ClickAt(1730, 544)
         case "large":
-            MouseMove(1730, 660)
-            Click "Down"
-            Click "Up"
+            ClickAt(1730, 660)
         default: ; medium, this is a just in case if nothing is detected
-            MouseMove(1730, 544)
-            Click "Down"
-            Click "Up"
+        ClickAt(1730, 544)
     }
 }
 BurgerAction() { ; builds the whole burger
@@ -156,81 +123,40 @@ BurgerAction() { ; builds the whole burger
     TheOrder:= Map()
     ItemsArray:=[]
     times:=0
-    t:=2400
+    t:=2500
     ActivateRoblox()
     hwnd:=GetRobloxHWND()
     GetRobloxClientPos(hwnd)
-    MouseMove(1860, 370) ; this is because of reliablility stuff
-    Click "Down"
-    Click "Up"
+    ClickAt(1860, 370) 
     HyperSleep(300)
     pBMScreen := Gdip_BitmapFromScreen(((windowX+windowWidth)/2)-500 "|" ((windowY+windowHeight)/2)-300 "|900|185")
     /*
     THIS CAN ABSOLUTELY GET IMPROVED, but some items wanted to be special so i just gave up
     and brute forced it, but it works EMMACULATE tho
     */
-    if (Gdip_ImageSearch(pBMScreen, bitmaps["lettuce"], &Coords, , , , , 20)) {
-        t:=t-300
-        coords := StrSplit(Coords,",")
-        BigTotal := FindAmount(coords[1],coords[2])
-        TheOrder.__New("lettuce", BigTotal)
-        ItemsArray.Push("lettuce")
-        
-    }
-    if (Gdip_ImageSearch(pBMScreen, bitmaps["tomato"], &Coords, , , , , 50)) {
-        t:=t-300
-        coords := StrSplit(Coords,",")
-        BigTotal := FindAmount(coords[1],coords[2])
-        TheOrder.__New("tomato", BigTotal)
-        ItemsArray.Push("tomato")
-    }
-    if (Gdip_ImageSearch(pBMScreen, bitmaps["beef"], &Coords, , , , , 10)) {
-        t:=t-300
-        coords := StrSplit(Coords,",")
-        BigTotal := FindAmount(coords[1],coords[2])
-        TheOrder.__New("beef", BigTotal)
-        ItemsArray.Push("beef")
-        detected:=1
-    }
-    if (Gdip_ImageSearch(pBMScreen, bitmaps['veggie'], &Coords, , , , , 10)) {
-        t:=t-300
-        coords := StrSplit(Coords,",")
-        BigTotal := FindAmount(coords[1],coords[2])
-        TheOrder.__New("veggie", BigTotal)
-        ItemsArray.Push("veggie")
-        detected:=1
-    }
-    if (Gdip_ImageSearch(pBMScreen, bitmaps["cheese"], &Coords, , , , , 10)) {
-        t:=t-300
-        coords := StrSplit(Coords,",")
-        BigTotal := FindAmount(coords[1],coords[2])
-        TheOrder.__New("cheese", BigTotal)
-        ItemsArray.Push("cheese")
-    }
-    if (Gdip_ImageSearch(pBMScreen, bitmaps["onion"], &Coords, , , , , 50)) {
-        t:=t-300
-        coords := StrSplit(Coords,",")
-        BigTotal := FindAmount(coords[1],coords[2])
-        TheOrder.__New("onion", BigTotal)
-        ItemsArray.Push("onion")
-    }
+    if (Gdip_ImageSearch(pBMScreen, bitmaps["lettuce"], &Coords, , , , , 20))
+        coords := StrSplit(Coords,","), BT := FindAmount(coords[1],coords[2]), TheOrder.__New("lettuce", BT), ItemsArray.Push("lettuce"), t:=(BT=2) ? t-250 : t-125
+    if (Gdip_ImageSearch(pBMScreen, bitmaps["tomato"], &Coords, , , , , 50))
+        coords := StrSplit(Coords,","), BT := FindAmount(coords[1],coords[2]), TheOrder.__New("tomato", BT), ItemsArray.Push("tomato"), t:=(BT=2) ? t-250 : t-125
+    if (Gdip_ImageSearch(pBMScreen, bitmaps["beef"], &Coords, , , , , 10))
+        coords := StrSplit(Coords,","), BT := FindAmount(coords[1],coords[2]), TheOrder.__New("beef", BT), ItemsArray.Push("beef"), detected:=1, t:=(BT=2) ? t-250 : t-125
+    if (Gdip_ImageSearch(pBMScreen, bitmaps['veggie'], &Coords, , , , , 10))
+        coords := StrSplit(Coords,","), BT := FindAmount(coords[1],coords[2]), TheOrder.__New("veggie", BT), ItemsArray.Push("veggie"), detected:=1, t:=(BT=2) ? t-250 : t-125
+    if (Gdip_ImageSearch(pBMScreen, bitmaps["cheese"], &Coords, , , , , 10))
+        coords := StrSplit(Coords,","), BT := FindAmount(coords[1],coords[2]), TheOrder.__New("cheese", BT), ItemsArray.Push("cheese"), t:=(BT=2) ? t-250 : t-125
+    if (Gdip_ImageSearch(pBMScreen, bitmaps["onion"], &Coords, , , , , 50))
+        coords := StrSplit(Coords,","), BT := FindAmount(coords[1],coords[2]), TheOrder.__New("onion", BT), ItemsArray.Push("onion"), t:=(BT=2) ? t-250 : t-125
     ; bottom bun
     if detected=1 {
-        MouseMove(1660, 745)
-        Click "Down"
-        Click "Up"
+        ClickAt(1660, 745)
         ; the rest of the items
         for i in ItemsArray {
             ClickItem(i, TheOrder[i])
         }
         ; top bun
-        MouseMove(1660, 333)
-        Click "Down"
-        Click "Up"
+        ClickAt(1660, 333) 
         ; drinks section
-        MouseMove(1860, 483)
-        Click "Down"
-        Click "Up"
+        ClickAt(1860, 483) 
         HyperSleep(t)
     }
     FinishedOrder()
@@ -258,9 +184,7 @@ SidesAction() { ; this also can absolutely get improved, this is for the sides (
     if detected=1 {
         size:=FindSize()
         ClickItem(side,,size)
-        MouseMove(1860, 593)
-        Click "Down"
-        Click "Up"
+        ClickAt(1860, 593)
         HyperSleep(1200)
     }
     FinishedOrder()
@@ -289,9 +213,7 @@ DrinkAction() { ; same issue as the burger, things want to be special
         ClickItem(drink,,size)
         HyperSleep(1000)
     }
-    MouseMove(1860, 370)
-    Click "Down"
-    Click "Up"
+    ClickAt(1860, 370)
     HyperSleep(100)
     FinishedOrder()
     Gdip_DisposeImage(pBMScreen)
@@ -307,9 +229,7 @@ FinishedOrder() {
     pBMScreen := Gdip_BitmapFromScreen(((windowX+windowWidth)/2)-500 "|" ((windowY+windowHeight)/2)-300 "|900|185")
     if (Gdip_ImageSearch(pBMScreen, bitmaps["question"], , , , , , 40) || failed=6) { ; finished
         failed:=0
-        MouseMove(1857,712)
-        Click "Down"
-        Click "Up"
+        ClickAt(1857,712)
         HyperSleep(1500)
 
     }else{
@@ -317,11 +237,10 @@ FinishedOrder() {
         tooltip failed
     }
 }
-ClickAt(x, y, wait:=0) {
+ClickAt(x, y) {
     MouseMove(x,y)
     Click "Down"
     Click "Up"
-    HyperSleep(wait)
 }
 ;;;;;
 ; HOTKEYS
@@ -329,6 +248,7 @@ ClickAt(x, y, wait:=0) {
 
 F1::{
     loop {
+        HyperSleep(100)
         BurgerAction()
         SidesAction()
         DrinkAction()
