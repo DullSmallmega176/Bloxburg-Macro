@@ -42,76 +42,57 @@ msgbox "loaded"
 ClickItem(item, times:=0, size:="") { ; times is only used for burger toppings, size is only used for sides and drinks
     switch item {
         case "lettuce":
-            loop times {
-                MouseMove(1660, 685)
-                Click "Down"
-                HyperSleep(100)
-                Click "Up"
-                HyperSleep(150)
-            }
+            MouseMove(1660, 685)
+            Click "Down"
+            Click "Up"
+            HyperSleep(250)
 
         case "tomato":
-            loop times {
-                MouseMove(1660, 610)
-                Click "Down"
-                HyperSleep(100)
-                Click "Up"
-                HyperSleep(150)
-            }
+            MouseMove(1660, 610)
+            Click "Down"
+            Click "Up"
+            HyperSleep(250)
         case "beef":
-            loop times {
-                MouseMove(1616, 538)
-                Click "Down"
-                HyperSleep(100)
-                Click "Up"
-                HyperSleep(150)
-            }
+            MouseMove(1616, 538)
+            Click "Down"
+            Click "Up"
+            HyperSleep(250)
         case "veggie":
-            loop times {
-                MouseMove(1702, 538)
-                Click "Down"
-                HyperSleep(100)
-                Click "Up"
-                HyperSleep(150)
-            }
+            MouseMove(1702, 538)
+            Click "Down"
+            Click "Up"
+            HyperSleep(250)
         case "cheese":
-            loop times {
-                MouseMove(1660, 474)
-                Click "Down"
-                HyperSleep(100)
-                Click "Up"
-                HyperSleep(150)
-            }
+            MouseMove(1660, 474)
+            Click "Down"
+            Click "Up"
+            HyperSleep(250)
         case "onion":
-            loop times {
-                MouseMove(1660, 409)
-                Click "Down"
-                HyperSleep(100)
-                Click "Up"
-                HyperSleep(150)
-            }
+            MouseMove(1660, 409)
+            Click "Down"
+            Click "Up"
+            HyperSleep(250)
         case "fries", "drink":
             MouseMove(1600, 420)
             Click "Down"
-            HyperSleep(100)
             Click "Up"
-            HyperSleep(150)
             ClickSize(size)
         case "sticks", "juice":
             MouseMove(1600, 544)
             Click "Down"
-            HyperSleep(100)
             Click "Up"
-            HyperSleep(150)
             ClickSize(size)
         case "rings", "shake":
             MouseMove(1600, 660)
             Click "Down"
-            HyperSleep(100)
             Click "Up"
-            HyperSleep(150)
             ClickSize(size)
         
+    }
+    if times=2 {
+        HyperSleep(250)
+        Click "Down"
+        Click "Up"
     }
 }
 FindSize() { ; this can probably be improved
@@ -154,27 +135,19 @@ ClickSize(size) { ; didn't want to create a whole thing on the sides and drinks 
         case "small":
             MouseMove(1730, 420)
             Click "Down"
-            HyperSleep(100)
             Click "Up"
-            HyperSleep(150)
         case "medium":
             MouseMove(1730, 544)
             Click "Down"
-            HyperSleep(100)
             Click "Up"
-            HyperSleep(150)
         case "large":
             MouseMove(1730, 660)
             Click "Down"
-            HyperSleep(100)
             Click "Up"
-            HyperSleep(150)
         default: ; medium, this is a just in case if nothing is detected
             MouseMove(1730, 544)
             Click "Down"
-            HyperSleep(100)
             Click "Up"
-            HyperSleep(150)
     }
 }
 BurgerAction() { ; builds the whole burger
@@ -183,14 +156,12 @@ BurgerAction() { ; builds the whole burger
     TheOrder:= Map()
     ItemsArray:=[]
     times:=0
-    t:=2100
+    t:=2400
     ActivateRoblox()
     hwnd:=GetRobloxHWND()
     GetRobloxClientPos(hwnd)
-    HyperSleep(200)
     MouseMove(1860, 370) ; this is because of reliablility stuff
     Click "Down"
-    HyperSleep(100)
     Click "Up"
     HyperSleep(300)
     pBMScreen := Gdip_BitmapFromScreen(((windowX+windowWidth)/2)-500 "|" ((windowY+windowHeight)/2)-300 "|900|185")
@@ -247,9 +218,7 @@ BurgerAction() { ; builds the whole burger
     if detected=1 {
         MouseMove(1660, 745)
         Click "Down"
-        HyperSleep(100)
         Click "Up"
-        HyperSleep(100)
         ; the rest of the items
         for i in ItemsArray {
             ClickItem(i, TheOrder[i])
@@ -257,13 +226,10 @@ BurgerAction() { ; builds the whole burger
         ; top bun
         MouseMove(1660, 333)
         Click "Down"
-        HyperSleep(100)
         Click "Up"
-        HyperSleep(100)
         ; drinks section
         MouseMove(1860, 483)
         Click "Down"
-        HyperSleep(100)
         Click "Up"
         HyperSleep(t)
     }
@@ -294,9 +260,8 @@ SidesAction() { ; this also can absolutely get improved, this is for the sides (
         ClickItem(side,,size)
         MouseMove(1860, 593)
         Click "Down"
-        HyperSleep(100)
         Click "Up"
-        HyperSleep(1000)
+        HyperSleep(1200)
     }
     FinishedOrder()
     Gdip_DisposeImage(pBMScreen)
@@ -326,7 +291,6 @@ DrinkAction() { ; same issue as the burger, things want to be special
     }
     MouseMove(1860, 370)
     Click "Down"
-    HyperSleep(100)
     Click "Up"
     HyperSleep(100)
     FinishedOrder()
@@ -341,17 +305,23 @@ FinishedOrder() {
     hwnd:=GetRobloxHWND()
     GetRobloxClientPos(hwnd)
     pBMScreen := Gdip_BitmapFromScreen(((windowX+windowWidth)/2)-500 "|" ((windowY+windowHeight)/2)-300 "|900|185")
-    if (Gdip_ImageSearch(pBMScreen, bitmaps["question"], , , , , , 17) || failed=50) { ; finished
+    if (Gdip_ImageSearch(pBMScreen, bitmaps["question"], , , , , , 40) || failed=6) { ; finished
         failed:=0
         MouseMove(1857,712)
         Click "Down"
-        HyperSleep(100)
         Click "Up"
         HyperSleep(1500)
 
     }else{
         failed++
+        tooltip failed
     }
+}
+ClickAt(x, y, wait:=0) {
+    MouseMove(x,y)
+    Click "Down"
+    Click "Up"
+    HyperSleep(wait)
 }
 ;;;;;
 ; HOTKEYS
@@ -359,11 +329,10 @@ FinishedOrder() {
 
 F1::{
     loop {
-        HyperSleep(100)
         BurgerAction()
         SidesAction()
         DrinkAction()
-        HyperSleep(300)
+        HyperSleep(100)
     }
 }
 F2::Pause
