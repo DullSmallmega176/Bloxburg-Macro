@@ -254,10 +254,12 @@ CameraUp() { ; this can be done better but this is future proofing
 F1::{
     loop {
         HyperSleep(100)
-	@@ -229,6 +260,8 @@ F1::{
+        BurgerAction()
+        SidesAction()
+        DrinkAction()
         HyperSleep(100)
     }
 }
-F2::Pause
+F2::Pause -1
 F3::Reload
 F4::ExitApp
