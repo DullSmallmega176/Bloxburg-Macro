@@ -11,7 +11,7 @@ how to set up
 
 3. this WILL require AutoHotkey Version 2.0
 
-   download link - https://www.autohotkey.com/download/ahk-v2.exe
+   download links to ahk v2 - https://www.autohotkey.com/download/ahk-v2.exe
    website - https://www.autohotkey.com/
 
 DON'T GO TO THEIR DISCORD AND ASK FOR HELP THERE, this is an occuring thing with natro.
