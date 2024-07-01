@@ -217,7 +217,7 @@ ClickAt(x, y) {
     Click "Up"
 }
 
-RotateCamera(direction:=0, amount:=0) { ; direction, left:=1, right:=0
+RotateCamera(direction:=0, amount:=0) { ; direction, left:=1, right:=0, amount can be a decimal, but it has to be a number divisible by 48
     ActivateRoblox()
     hwnd:=GetRobloxHWND()
     GetRobloxClientPos(hwnd)
@@ -225,7 +225,7 @@ RotateCamera(direction:=0, amount:=0) { ; direction, left:=1, right:=0
     MouseGetPos(&xx,&yy)
     Click "Down R"
     sleep 100
-    loop 50*amount {
+    loop round(48*amount) {
         if !(direction=1)
             DllCall("user32.dll\mouse_event", "UInt", 0x0001, "Int", 5, "Int", 0)
         else
