@@ -65,21 +65,18 @@ ClickItem(item, times:=0, size:="") { ; times is only used for burger toppings, 
             ClickSize(size)
         
     }
-    if (times=2) {
-        HyperSleep(250)
-        Click "Down"
-        Click "Up"
-    }
+    if (times=2)
+        HyperSleep(250),Click()
 }
 
 FindSize() { ; this can probably be improved
     global bitmaps
-    sizes:=["small","medium","large"], size:=""
+    size:=""
     ActivateRoblox()
     hwnd:=GetRobloxHWND()
     GetRobloxClientPos(hwnd)
     pBMScreen := Gdip_BitmapFromScreen(((windowX+windowWidth)/2)-140 "|" ((windowY+windowHeight)/2)-300 "|290|185") ; getting a bitmap bigger than the order size, this is because it will always be changing
-    for i in sizes {
+    for i in ["small","medium","large"] {
         if (Gdip_ImageSearch(pBMScreen, bitmaps[i], , , , , , 10)) {
             size:=i
             break
@@ -91,12 +88,11 @@ FindSize() { ; this can probably be improved
 
 FindAmount(x, y) { ; this can probably be improved
     global bitmaps
-    amount:=["1","2"]
     ActivateRoblox()
     hwnd:=GetRobloxHWND()
     GetRobloxClientPos(hwnd)
     pBMScreen := Gdip_BitmapFromScreen(((windowX+windowWidth)/2)-500+x "|" ((windowY+windowHeight)/2)-300+y "|100|100")
-    for i in amount {
+    for i in ["1","2"] {
         if (Gdip_ImageSearch(pBMScreen, bitmaps[i], , , , , , 20)) {
             Gdip_DisposeImage(pBMScreen)
             return i ; this is where it's clarified how many burger patties or toppings to add for the corresponding item
@@ -121,78 +117,86 @@ ClickSize(size) { ; didn't want to create a whole thing on the sides and drinks 
 
 BurgerAction() { ; builds the whole burger
     global bitmaps
-    detected:=0, TheOrder:= Map(), ItemsArray:=[], times:=0, t:=2500, itemarr:=["lettuce","tomato","beef","veggie","cheese","onion"], threshold:=[20,50,10,10,10,50]
-    ActivateRoblox()
-    hwnd:=GetRobloxHWND()
-    GetRobloxClientPos(hwnd)
-    ClickAt(1860, 370) 
-    HyperSleep(300)
-    pBMScreen := Gdip_BitmapFromScreen(((windowX+windowWidth)/2)-500 "|" ((windowY+windowHeight)/2)-300 "|900|185")
-    ; this can probably be improved
-    for i in itemarr {
-        if (Gdip_ImageSearch(pBMScreen, bitmaps[i], &Coords, , , , , threshold[A_Index]))
-            coords:=StrSplit(Coords,","), BT:=FindAmount(coords[1],coords[2]), TheOrder.__New(i, BT), ItemsArray.Push(i), detected:=1, t:=(BT=2) ? t-250 : t-125
-    }
-    ; bottom bun
-    if detected=1 { ; this one is different from the other ones
-        ClickAt(1660, 745)
-        ; the rest of the items
-        for i in ItemsArray {
-            ClickItem(i, TheOrder[i])
+    local detected:=0
+    if FinishedOrder()=0 {
+        TheOrder:= Map(), ItemsArray:=[], times:=0, t:=2500, threshold:=[20,50,10,10,10,50]
+        ActivateRoblox()
+        hwnd:=GetRobloxHWND()
+        GetRobloxClientPos(hwnd)
+        ClickAt(1860, 370) 
+        HyperSleep(300)
+        pBMScreen := Gdip_BitmapFromScreen(((windowX+windowWidth)/2)-500 "|" ((windowY+windowHeight)/2)-300 "|900|185")
+        ; shuffling the list - later feature
+        
+        ; this can probably be improved
+        for i in ["lettuce","tomato","beef","veggie","cheese","onion"] {
+            if (Gdip_ImageSearch(pBMScreen, bitmaps[i], &Coords, , , , , threshold[A_Index]))
+                coords:=StrSplit(Coords,","), BT:=FindAmount(coords[1],coords[2]), TheOrder.__New(i, BT), ItemsArray.Push(i), detected:=1, t:=(BT=2) ? t-=250 : t-=142
         }
-        ; top bun
-        ClickAt(1660, 333) 
-        ; drinks section
-        ClickAt(1860, 483) 
-        HyperSleep(t)
+        ; bottom bun
+        if detected=1 { ; this one is different from the other ones
+            ClickAt(1660, 745)
+            ; the rest of the items
+            for i in ItemsArray {
+                ClickItem(i, TheOrder[i])
+            }
+            ; top bun
+            ClickAt(1660, 333) 
+            ; drinks section
+            ClickAt(1860, 483) 
+            HyperSleep(t)
+            Gdip_DisposeImage(pBMScreen)
+            return 1
+        }
+        Gdip_DisposeImage(pBMScreen)
     }
-    FinishedOrder()
-    Gdip_DisposeImage(pBMScreen)
-    if detected=1
-        return 1
+    return 0
 }
 
 SidesAction() { ; this also can absolutely get improved, this is for the sides (fries and whatever)
-    global bitmaps, detected:=0, times:=0, sides:=["fries","sticks","rings"]
-    ActivateRoblox()
-    hwnd:=GetRobloxHWND()
-    GetRobloxClientPos(hwnd)
-    pBMScreen := Gdip_BitmapFromScreen(((windowX+windowWidth)/2)-140 "|" ((windowY+windowHeight)/2)-300 "|290|185") 
-    for i in sides {
-        if (Gdip_ImageSearch(pBMScreen, bitmaps[i], , , , , , 60)) {
-            detected:=1, size:=FindSize()
-            ClickItem(i,,size)
-            ClickAt(1860, 593)
-            HyperSleep(1200)
-            break
+    global bitmaps
+    if FinishedOrder()=0 {
+        detected:=0, times:=0
+        ActivateRoblox()
+        hwnd:=GetRobloxHWND()
+        GetRobloxClientPos(hwnd)
+        pBMScreen := Gdip_BitmapFromScreen(((windowX+windowWidth)/2)-140 "|" ((windowY+windowHeight)/2)-300 "|290|185") 
+        for i in ["fries","sticks","rings"] {
+            if (Gdip_ImageSearch(pBMScreen, bitmaps[i], , , , , , 60)) {
+                size:=FindSize()
+                ClickItem(i,,size)
+                ClickAt(1860, 593)
+                HyperSleep(1200)
+                break
+            }
         }
+        Gdip_DisposeImage(pBMScreen)
+        return 1
     }
-    FinishedOrder()
-    Gdip_DisposeImage(pBMScreen)
-    return detected
+    return 0
 }
 
 DrinkAction() { ; same issue as the burger, things want to be special
     global bitmaps
-    detected:=0
-    drinks:=["drink","juice","shake"]
-    ActivateRoblox()
-    hwnd:=GetRobloxHWND()
-    GetRobloxClientPos(hwnd)
-    pBMScreen := Gdip_BitmapFromScreen(((windowX+windowWidth)/2)-140 "|" ((windowY+windowHeight)/2)-300 "|290|185")
-    for i in drinks {
-        if (Gdip_ImageSearch(pBMScreen, bitmaps[i], , , , , , 60)) {
-            drink:=i, detected:=1, size:=FindSize()
-            ClickItem(drink,,size)
-            HyperSleep(1000)
-            break
+    if FinishedOrder()=0 {
+        ActivateRoblox()
+        hwnd:=GetRobloxHWND()
+        GetRobloxClientPos(hwnd)
+        pBMScreen := Gdip_BitmapFromScreen(((windowX+windowWidth)/2)-140 "|" ((windowY+windowHeight)/2)-300 "|290|185")
+        for i in ["drink","juice","shake"] {
+            if (Gdip_ImageSearch(pBMScreen, bitmaps[i], , , , , , 60)) {
+                drink:=i, size:=FindSize()
+                ClickItem(drink,,size)
+                HyperSleep(1000)
+                break
+            }
         }
+        ClickAt(1860, 370)
+        HyperSleep(100)
+        Gdip_DisposeImage(pBMScreen)
+        return 1
     }
-    ClickAt(1860, 370)
-    HyperSleep(100)
-    FinishedOrder()
-    Gdip_DisposeImage(pBMScreen)
-    return detected
+    return 0
 }
 
 FinishedOrder() {
@@ -205,14 +209,15 @@ FinishedOrder() {
     if (Gdip_ImageSearch(pBMScreen, bitmaps["question"], , , , , , 40) || ++failed>=6) { ; finished
         failed:=0
         ClickAt(1857,712)
-        HyperSleep(1500)
-
+        HyperSleep(2000)
+        return 1
     }
     tooltip failed
+    return 0
 }
 
 ClickAt(x, y) {
-    MouseMove(x,y)
+    MouseMove(x+Random(-20,20),y+Random(-10,10))
     Click "Down"
     Click "Up"
 }
@@ -247,13 +252,15 @@ CameraUp() { ; this can be done better but this is future proofing
     Click "Up R"
 }
 
+NextOrder() { ; check if you're in critical health, this will be implemented in the near idk how long
+    return 0
+}
+
 ;;;;;
 ; HOTKEYS
 ;;;;;
-
 F1::{
     loop {
-        HyperSleep(100)
         BurgerAction()
         SidesAction()
         DrinkAction()
