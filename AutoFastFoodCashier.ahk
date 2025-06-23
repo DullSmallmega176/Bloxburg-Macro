@@ -1,4 +1,11 @@
-﻿; ========== Initialization ==========
+﻿; ========== Setup ==========
+timeLimit := 1800
+/*
+time limit is how long the script should run "IN SECONDS"
+this is so you can set it and forget it, and it'll close after the time is up.Any
+default - 1800 "30 minutes"
+*/
+; ========== Initialization ==========
 #SingleInstance Force
 #Warn VarUnset, Off
 #Requires AutoHotkey v2.0
@@ -25,6 +32,9 @@ OnExit(*) => (Gdip_Shutdown(pToken), ExitApp(), -1)
 ; ========== Roblox Client Setup ==========
 WindowX:=WindowY:=WindowWidth:=WindowHeight:=0
 GetRobloxClientPos()
+SC_L:="sc026" ; l
+SC_Esc:="sc001" ; Esc
+SC_Enter:="sc01c" ; Enter
 ; ========== Order Functions ==========
 sideItem() { ; returns array of side and size, 0 if nothing was detected
     GetRobloxClientPos()
@@ -97,11 +107,13 @@ toppingAmount(coords) { ; just used by burgerItems(), detects the amount of topp
     return amount
 }
 orderFinished() { ; 1=NPC finished ordering, 0=still ordering
+    static ran:=0
+    ran++
     GetRobloxClientPos()
     pBMScreen := Gdip_BitmapFromScreen(windowX+(windowWidth/2)-200 "|" windowY+(windowHeight/2)-270 "|420|160")
     isEnd := 0
-    if (Gdip_ImageSearch(pBMScreen, bitmaps["question"],,,,,,15))
-        isEnd := 1
+    if (Gdip_ImageSearch(pBMScreen, bitmaps["question"],,,,,,15)) || ran=30
+        isEnd := 1, ran:=0
     Gdip_DisposeImage(pBMScreen)
     return isEnd
 }
@@ -249,13 +261,16 @@ ForceRoblox1080p() {
     if (posX)
     sleep 100
 }
+nowUnix() => DateDiff(A_NowUTC, "19700101000000", "Seconds")
 ; ========== Hotkeys ==========
 F1:: {
     GetRobloxClientPos()
     if !(WindowWidth=1920 && windowHeight=1080)
         msgbox("Roblox will be automatically scaled to 1920x1080"), ForceRoblox1080p()
-    loop
+    start := nowUnix()
+    while (nowUnix()-start < timeLimit)
         orderBuilder(), Sleep(100)
+    closeRoblox()
 }
 F2::Reload
 F3::ExitApp
