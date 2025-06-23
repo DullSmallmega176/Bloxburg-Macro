@@ -2,7 +2,7 @@
 timeLimit := 1800
 /*
 time limit is how long the script should run "IN SECONDS"
-this is so you can set it and forget it, and it'll close after the time is up.Any
+this is so you can set it and forget it, and it'll close after the time is up (same with roblox).
 default - 1800 "30 minutes"
 */
 ; ========== Initialization ==========
