@@ -1,8 +1,8 @@
-﻿; ========== Setup ==========
+; ========== Setup ==========
 timeLimit := 1800
 /*
 time limit is how long the script should run "IN SECONDS"
-this is so you can set it and forget it, and it'll close after the time is up (same with roblox).
+this is so you can set it and forget it, and it'll close after the time is up.Any
 default - 1800 "30 minutes"
 */
 ; ========== Initialization ==========
@@ -19,7 +19,7 @@ if (A_ScreenHeight<1080)
 if (A_ScreenWidth<1920)
     throw Error("Seems like your screen width is small`nThe script won't work with a screen width under 1920`n`nExiting script, sorry.", "WARNING!!!", 0x10), ExitApp()
 ; ========== Libraries ==========
-#Include "%A_ScriptDir%\lib"
+#Include "%A_ScriptDir%\..\lib"
 #Include "Gdip_All.ahk"
 #Include "Gdip_ImageSearch.ahk"
 #Include "Roblox.ahk"
@@ -27,7 +27,7 @@ if (A_ScreenWidth<1920)
 if !(pToken := Gdip_Startup())
     throw Error("GDI+ failed to start, exiting script."), ExitApp()
 (bitmaps := Map()).CaseSense := 0
-#Include "%A_ScriptDir%\images\bitmaps.ahk"
+#Include "%A_ScriptDir%\..\images\bitmaps.ahk"
 OnExit(*) => (Gdip_Shutdown(pToken), ExitApp(), -1)
 ; ========== Roblox Client Setup ==========
 WindowX:=WindowY:=WindowWidth:=WindowHeight:=0
