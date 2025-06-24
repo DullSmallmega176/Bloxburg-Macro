@@ -36,215 +36,124 @@ SC_L:="sc026" ; l
 SC_Esc:="sc001" ; Esc
 SC_Enter:="sc01c" ; Enter
 ; ========== Order Functions ==========
-sideItem() { ; returns array of side and size, 0 if nothing was detected
-    GetRobloxClientPos()
+genericItem(items, threshold) { ; detects both the side or drink, combined because smaller
     pBMScreen := Gdip_BitmapFromScreen(windowX+(windowWidth/2)-140 "|" windowY+(windowHeight/2)-300 "|290|185")
     item := []
-    if (Gdip_ImageSearch(pBMScreen, bitmaps["fries"],,,,,,75))
-        item.Push("fries")
-    if (Gdip_ImageSearch(pBMScreen, bitmaps["sticks"],,,,,,75))
-        item.Push("sticks")
-    if (Gdip_ImageSearch(pBMScreen, bitmaps["rings"],,,,,,75))
-        item.Push("rings")
+    for i in items
+        if (Gdip_ImageSearch(pBMScreen, bitmaps[i],,,,,,threshold))
+            item.Push(i)
     Gdip_DisposeImage(pBMScreen)
     if item.Length > 0 {
         while (size := itemSize()) = 0 || A_Index > 9
-            Sleep(100)
+            Sleep 100
         item.Push(size)
     }
     return (item.Length > 0) ? item : 0
 }
-drinkItem() { ; returns array of drink and size, 0 if nothing was detected
-    GetRobloxClientPos()
-    pBMScreen := Gdip_BitmapFromScreen(windowX+(windowWidth/2)-140 "|" windowY+(windowHeight/2)-300 "|290|185")
-    item := []
-    if (Gdip_ImageSearch(pBMScreen, bitmaps["drink"],,,,,,50))
-        item.Push("drink")
-    if (Gdip_ImageSearch(pBMScreen, bitmaps["juice"],,,,,,50))
-        item.Push("juice")
-    if (Gdip_ImageSearch(pBMScreen, bitmaps["shake"],,,,,,50))
-        item.Push("shake")
-    Gdip_DisposeImage(pBMScreen)
-    if item.Length > 0 {
-        while (size := itemSize()) = 0 || A_Index > 9
-            Sleep(100)
-        item.Push(size)
-    }
-    return (item.Length > 0) ? item : 0
-}
+sideItem() => genericItem(["fries", "sticks", "rings"], 60)
+drinkItem() => genericItem(["drink", "juice", "shake"], 75)
 itemSize() { ; 3=large, 2=medium, 1=small, 0=none
-    GetRobloxClientPos()
     pBMScreen := Gdip_BitmapFromScreen(windowX+968 "|" windowY+360 "|46|46")
     size := (Gdip_ImageSearch(pBMScreen, bitmaps["large"],,,,,,5) ? "large" : Gdip_ImageSearch(pBMScreen, bitmaps["medium"],,,,,,5) ? "medium" : (Gdip_ImageSearch(pBMScreen, bitmaps["small"],,,,,,5) ? "small" : 0))
     Gdip_DisposeImage(pBMScreen)
     return size
 }
-burgerItems() { ; returns array of each topping, 0 if nothing was detected
-    GetRobloxClientPos()
+burgerItem() { ; returns array of each topping, 0 if nothing was detected
     pBMScreen := Gdip_BitmapFromScreen(windowX+(windowWidth/2)-500 "|" windowY+(windowHeight/2)-300 "|900|185")
-    items := []
-    if (Gdip_ImageSearch(pBMScreen, bitmaps["lettuce"],&coords,,,,,20))
-        items.Push(["lettuce", toppingAmount(coords)])
-    if (Gdip_ImageSearch(pBMScreen, bitmaps["tomato"],&coords,,,,,50))
-        items.Push(["tomato", toppingAmount(coords)])
-    if (Gdip_ImageSearch(pBMScreen, bitmaps["beef"],&coords,,,,,10))
-        items.Push(["beef", toppingAmount(coords)])
-    if (Gdip_ImageSearch(pBMScreen, bitmaps["veggie"],&coords,,,,,10))
-        items.Push(["veggie", toppingAmount(coords)])
-    if (Gdip_ImageSearch(pBMScreen, bitmaps["cheese"],&coords,,,,,10))
-        items.Push(["cheese", toppingAmount(coords)])
-    if (Gdip_ImageSearch(pBMScreen, bitmaps["onion"],&coords,,,,,50))
-        items.Push(["onion", toppingAmount(coords)])
+    items := [], threshold := [20,50,10,10,10,45]
+    for item in ["lettuce", "tomato", "beef", "veggie", "cheese", "onion"]
+        if (Gdip_ImageSearch(pBMScreen, bitmaps[item],&coords,,,,,threshold[A_Index]))
+            items.Push([item, toppingAmount(coords)])
     Gdip_DisposeImage(pBMScreen)
     return (items.Length > 0) ? items : 0
 }
-toppingAmount(coords) { ; just used by burgerItems(), detects the amount of toppings in a burger
-    GetRobloxClientPos()
+toppingAmount(coords) { ; just used by burgerItems(), detects the amount of one topping in a burger
     x:=StrSplit(coords,",")[1]
     pBMScreen := Gdip_BitmapFromScreen(windowX+(windowWidth/2)-500+x "|" windowY+370 "|100|100")
-    amount := (Gdip_ImageSearch(pBMScreen, bitmaps["1"],,,,,,20)) ? 1 : (Gdip_ImageSearch(pBMScreen, bitmaps["2"],,,,,,20) ? 2 : 1)
+    amount := (Gdip_ImageSearch(pBMScreen, bitmaps["2"],,,,,,20) ? 2 : 1)
     Gdip_DisposeImage(pBMScreen)
     return amount
 }
-orderFinished() { ; 1=NPC finished ordering, 0=still ordering
+orderFinished(clear?) { ; 1=NPC finished ordering, 0=still ordering
     static ran:=0
+    if IsSet(clear)
+        return ran:=0
     ran++
-    GetRobloxClientPos()
     pBMScreen := Gdip_BitmapFromScreen(windowX+(windowWidth/2)-200 "|" windowY+(windowHeight/2)-270 "|420|160")
     isEnd := 0
-    if (Gdip_ImageSearch(pBMScreen, bitmaps["question"],,,,,,15)) || ran=30
+    if (Gdip_ImageSearch(pBMScreen, bitmaps["question"],,,,,,15)) || ran>=30
         isEnd := 1, ran:=0
     Gdip_DisposeImage(pBMScreen)
     return isEnd
 }
-orderBuilder() { ; builds the order, returns a map of the whole order, 0 if nothing was detected
-    burger:=side:=drink:=0
-    burgerBuilt:=sideBuilt:=drinkBuilt:=0
-    wholeOrder := Map()
+orderBuilder() { ; 
+    done:=Map("burger", 0, "side", 0, "drink", 0), built:=Map("burger", 0, "side", 0, "drink", 0)
     while (!orderFinished()) { ; NPC orders burger and side, drink is here and there
-        if !burger {
-            burgerOrder := burgerItems()
-            if burgerOrder {
-                burger := 1
-                if !burgerBuilt
-                    buildBurger(burgerOrder), burgerBuilt:=1
-            }
-        }
-        if !side {
-            sideOrder := sideItem()
-            if sideOrder {
-                side:=1
-                if !sideBuilt
-                    buildSide(sideOrder), sideBuilt:=1
-            }
-        }
-        if !drink {
-            drinkOrder := drinkItem()
-            if drinkOrder {
-                drink := 1
-                if !drinkBuilt {
-                    buildDrink(drinkOrder)
-                    break
+        for item in ["burger", "side", "drink"] {
+            if done[item]
+                continue
+            sleep 300
+            if (order := %item "Item"%()) {
+                done[item]:=1
+                if !built[item] {
+                    %("build" StrTitle(item))%(order)
+                    built[item]:=1
+                    if (item = "drink" && built["drink"]=1) {
+                        orderFinished(1)
+                        break 2
+                    }
                 }
             }
         }
-        sleep(100)
+        sleep 200
     }
     ClickAt(1858, 710) ; confirm order
-    sleep 3000 ; gives a delay until it starts again
+    sleep 3000 ; gives a delay until it starts again (safety)
 }
-buildBurger(order) {
+buildBurger(order) { ; builds the whole burger.
     if !order
         return
     ClickAt(1858, 380) ; burger builder
     Sleep 500
     ClickAt(1665, 745) ; bottom bun
     for item in order {
-        name := item[1], amount := item[2]
-        Loop amount {
-            Sleep (A_Index = 1) ? 100 : 250
-            if name = "lettuce"
-                ClickAt(1665, 685)
-            else if name = "tomato"
-                ClickAt(1665, 600)
-            else if name = "beef"
-                ClickAt(1616, 540)
-            else if name = "veggie"
-                ClickAt(1700, 540)
-            else if name = "cheese"
-                ClickAt(1665, 475)
-            else if name = "onion"
-                ClickAt(1665, 410)
-        }
+        y:=Map("lettuce", 685, "tomato", 600, "beef", 540, "veggie", 540, "cheese", 475, "onion", 410), name:=item[1], amount:=item[2]
+        Loop amount
+            Sleep((A_Index = 1) ? 100 : 250), ClickAt((name = "beef") ? 1616: (name = "veggie") ? 1700 : 1665, y[name])
     }
     ClickAt(1665, 350) ; top bun
 }
-buildSide(order) {
+buildGeneric(itemType, order) { ; builds both the side or drink, combined because smaller
     if !order
         return
-    ClickAt(1858, 490)
-    Sleep 500
+    ClickAt(1858, (itemType = "side" ? 490:600)) ; 600 is drink
+    sleep 500
     item := order[1], size := order[2]
-    if item = "fries"
-        ClickAt(1600, 425)
-    else if item = "sticks"
-        ClickAt(1600, 545)
-    else if item = "rings"
-        ClickAt(1600, 665)
-    Sleep 100
-    if size = "small"
-        ClickAt(1725, 425)
-    else if size = "medium"
-        ClickAt(1725, 545)
-    else if size = "large"
-        ClickAt(1725, 665)
+    itemIcon := Map("fries|drink|small", 425, "sticks|juice|medium", 545, "rings|shake|large", 665)
+    for group, y in itemIcon
+        if InStr(group, item)
+            ClickAt(1600, y)
+    for group, y in itemIcon
+        if InStr(group, size)
+            ClickAt(1725, y)
 }
-buildDrink(order) {
-    if !order
-        return
-    ClickAt(1858, 600)
-    Sleep 500
-    item := order[1], size := order[2]
-    if item = "drink"
-        ClickAt(1600, 425)
-    else if item = "juice"
-        ClickAt(1600, 545)
-    else if item = "shake"
-        ClickAt(1600, 665)
-    Sleep 100
-    if size = "small"
-        ClickAt(1725, 425)
-    else if size = "medium"
-        ClickAt(1725, 545)
-    else if size = "large"
-        ClickAt(1725, 665)
-}
-ClickAt(x, y) {
-    GetRobloxClientPos()
-    MouseMove(x+Random(-20,20)+windowX,y+Random(-8,10)+windowY, 4)
-    Click "Down"
-    Click "Up"
-}
-ForceRoblox1080p() {
+buildSide(order) => buildGeneric("side", order)
+buildDrink(order) => buildGeneric("drink", order)
+ClickAt(x, y) => (MouseMove(x+Random(-20,20)+windowX, y+Random(-8,10)+windowY, 4),Click("Down"),Click("Up"),0)
+ForceRoblox1080p() { ; this macro only works in 1080p since images are based on this resolution
     if !WinExist("Roblox ahk_exe RobloxPlayerBeta.exe")
         return
-
     bestMonitor:=0
     monitorCount := SysGet(80)
-
-    monitorWidth := SysGet(0)
+    monitorWidth := SysGet(0) ; main monitor
     monitorHeight := SysGet(1)
-
-    virtualWidth := SysGet(78)
+    virtualWidth := SysGet(78) ; inclused all the monitors "some math is involved to find out the res on that monitor"
     virtualHeight := SysGet(79)
-
-    monitorLeft:=monitorTop:=0
-
-    if (monitorWidth=1920 && monitorHeight=1080) ; checks if main monitor is 1920x1080, if not. proceed
+    monitorLeft:=monitorTop:=0 ; main monitor
+    if (monitorWidth=1920 && monitorHeight=1080)
         bestMonitor:=1
-    else if (virtualWidth-monitorWidth>=0 && virtualHeight-monitorHeight>=0 && monitorCount=2) ; checks if any other monitor is 1920x1080 "failsafe"
+    else if (virtualWidth-monitorWidth>=0 && virtualHeight-monitorHeight>=0 && monitorCount=2)
         bestMonitor:=2
-    
     if (bestMonitor=2)
         monitorLeft:=SysGet(76), monitorTop:=SysGet(77)
     try
@@ -265,12 +174,12 @@ nowUnix() => DateDiff(A_NowUTC, "19700101000000", "Seconds")
 ; ========== Hotkeys ==========
 F1:: {
     GetRobloxClientPos()
-    if !(WindowWidth=1920 && windowHeight=1080)
+    if (WindowWidth!=1920 || windowHeight!=1080)
         msgbox("Roblox will be automatically scaled to 1920x1080"), ForceRoblox1080p()
     start := nowUnix()
     while (nowUnix()-start < timeLimit)
-        orderBuilder(), Sleep(100)
-    closeRoblox()
+        GetRobloxClientPos(),orderBuilder(), Sleep(100)
+    closeRoblox(), ExitApp()
 }
 F2::Reload
 F3::ExitApp
