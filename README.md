@@ -50,4 +50,4 @@ YOU CAN IGNORE EVERYTHING ELSE UNDER THIS, Used for github.
  - [Gdip_All.ahk](https://github.com/marius-sucan/AHK-GDIp-Library-Compilation/blob/master/ahk-v1-1/Gdip_All.ahk) Originally created by many users. currently using an ahk v2.0 translation in [this repository](https://github.com/buliasz/AHKv2-Gdip) (the file from this macro in [Natro Macro](https://github.com/NatroTeam/NatroMacro))
  - [Gdip_ImageSearch.ahk](https://github.com/MasterFocus/AutoHotkey/blob/master/Functions/Gdip_ImageSearch/Gdip_ImageSearch.ahk) translated by [SP](https://github.com/zspz) 
  - [Roblox.ahk](https://github.com/NatroTeam/NatroMacro/blob/main/lib/Roblox.ahk) Originally created by [SP](https://github.com/zspz) , also a function named closeRoblox() made by the [Natro Team](https://github.com/NatroTeam).
- 
+ - [DarkMode.ahk](https://www.autohotkey.com/boards/viewtopic.php?t=115952) Found this when searching up for dark mode stuff, works really good.
