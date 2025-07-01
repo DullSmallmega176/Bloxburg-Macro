@@ -470,7 +470,7 @@ burgerItem() { ; returns array of each topping, 0 if nothing was detected
 toppingAmount(coords) { ; just used by burgerItems(), detects the amount of one topping in a burger
     x:=StrSplit(coords,",")[1]
     pBMScreen := Gdip_BitmapFromScreen(windowX+(windowWidth/2)-500+x "|" windowY+370 "|100|100")
-    amount := (Gdip_ImageSearch(pBMScreen, bitmaps["2"],,,,,,5) ? 2 : 1)
+    amount := (Gdip_ImageSearch(pBMScreen, bitmaps["2"],,,,,,15) ? 2 : 1)
     Gdip_DisposeImage(pBMScreen)
     return amount
 }
