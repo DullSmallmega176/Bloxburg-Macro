@@ -5,9 +5,9 @@
 if A_ScreenDPI != 96
     throw Error("This macro requires a display scale of 100%")
 if (A_ScreenHeight<1080)
-    throw Error("Seems like your screen height is small`nThe script won't work with a screen height under 1080`n`nExiting script, sorry.", "WARNING!!!", 0x10)
+    throw Error("Seems like your screen height is small`nThe script won't work with a screen height under 1080`n`nExiting script, sorry.")
 if (A_ScreenWidth<1920)
-    throw Error("Seems like your screen width is small`nThe script won't work with a screen width under 1920`n`nExiting script, sorry.", "WARNING!!!", 0x10)
+    throw Error("Seems like your screen width is small`nThe script won't work with a screen width under 1920`n`nExiting script, sorry.")
 ; ========== Libraries ==========
 #Include "%A_ScriptDir%\..\lib"
 #Include "Gdip_All.ahk"
