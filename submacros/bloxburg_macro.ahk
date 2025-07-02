@@ -3,11 +3,11 @@
 #Requires AutoHotkey v2.0
 #SingleInstance Force
 if A_ScreenDPI != 96
-    throw Error("This macro requires a display scale of 100%"), ExitApp()
+    throw Error("This macro requires a display scale of 100%")
 if (A_ScreenHeight<1080)
-    throw Error("Seems like your screen height is small`nThe script won't work with a screen height under 1080`n`nExiting script, sorry.", "WARNING!!!", 0x10), ExitApp()
+    throw Error("Seems like your screen height is small`nThe script won't work with a screen height under 1080`n`nExiting script, sorry.", "WARNING!!!", 0x10)
 if (A_ScreenWidth<1920)
-    throw Error("Seems like your screen width is small`nThe script won't work with a screen width under 1920`n`nExiting script, sorry.", "WARNING!!!", 0x10), ExitApp()
+    throw Error("Seems like your screen width is small`nThe script won't work with a screen width under 1920`n`nExiting script, sorry.", "WARNING!!!", 0x10)
 ; ========== Libraries ==========
 #Include "%A_ScriptDir%\..\lib"
 #Include "Gdip_All.ahk"
@@ -15,21 +15,21 @@ if (A_ScreenWidth<1920)
 #Include "Roblox.ahk"
 #Include "DarkMode.ahk"
 #Warn VarUnset, Off
-;OnError (e, mode) => (mode = "Return") ? -1 : 0
+OnError (e, mode) => (mode = "Return") ? -1 : 0
 SetWorkingDir A_ScriptDir "\.."
 CoordMode "Mouse", "Screen"
 CoordMode "Pixel", "Screen"
 SendMode "Event"
 ; ========== GDI+ Initialization ==========
 if !(pToken := Gdip_Startup())
-    throw Error("GDI+ failed to start, exiting script."), ExitApp()
+    throw Error("GDI+ failed to start, exiting script.")
 ; ========== Imports ==========
 createFolder(folder) {
     if !FileExist(folder) {
         try
             DirCreate folder
         catch
-            throw Error("Could not create the " folder " directory`nMeaning the macro won't work correctly`nTry moving the macor to a different folder", "WARNING!!!", 0x10), ExitApp()
+            throw Error("Could not create the " folder " directory`nMeaning the macro won't work correctly`nTry moving the macor to a different folder", "WARNING!!!", 0x10)
     }
 }
 (conf := Map()).CaseSense := 0
@@ -394,7 +394,8 @@ startMacro(*) {
     while (conf["AutoCloseRoblox"] = 0 || nowUnix()-macroStart < Round(conf["timeLimMins"]*60))
         GetRobloxClientPos(),setStatus("order was a " ((successfulOrder:=orderBuilder())=1 ? "success":"fail")), (successfulOrder ? updateValue("TotalOrders",conf["TotalOrders"]+1, "Status"):updateValue("ErrorCount",conf["ErrorCount"]+1, "Status")), updateStats(), Sleep(100)
     updateValue("TotalRuntime", nowUnix() - macroStart, "Status")
-    closeRoblox(), ExitApp()
+    closeRoblox()
+    ExitApp()
 }
 pauseMacro(*) {
     global macroStatus
