@@ -1,4 +1,4 @@
-ToggleTheme(GuiCtrlObj, *)
+﻿ToggleTheme(GuiCtrlObj, *)
 {
 	switch GuiCtrlObj.Text
 	{
@@ -14,9 +14,6 @@ ToggleTheme(GuiCtrlObj, *)
 		}
 	}
 }
-
-
-
 
 SetWindowAttribute(GuiObj, DarkMode := True)
 {
@@ -53,7 +50,6 @@ SetWindowAttribute(GuiObj, DarkMode := True)
 		}
 	}
 }
-
 
 SetWindowTheme(GuiObj, DarkMode := True)
 {
@@ -146,8 +142,6 @@ SetWindowTheme(GuiObj, DarkMode := True)
 		Init := True
 	}
 }
-
-
 
 WindowProc(hwnd, uMsg, wParam, lParam)
 {

@@ -10,10 +10,12 @@ if (A_ScreenWidth<1920)
     throw Error("Seems like your screen width is small`nThe script won't work with a screen width under 1920`n`nExiting script, sorry.")
 ; ========== Libraries ==========
 #Include "%A_ScriptDir%\..\lib"
+#Include "DarkMode.ahk"
 #Include "Gdip_All.ahk"
 #Include "Gdip_ImageSearch.ahk"
+#Include "JSON.ahk"
 #Include "Roblox.ahk"
-#Include "DarkMode.ahk"
+
 #Warn VarUnset, Off
 OnError (e, mode) => (mode = "Return") ? -1 : 0
 SetWorkingDir A_ScriptDir "\.."
@@ -29,7 +31,7 @@ createFolder(folder) {
         try
             DirCreate folder
         catch
-            throw Error("Could not create the " folder " directory`nMeaning the macro won't work correctly`nTry moving the macor to a different folder", "WARNING!!!", 0x10)
+            throw Error("Could not create the " folder " directory`nMeaning the macro won't work correctly`nTry moving the macor to a different folder")
     }
 }
 (conf := Map()).CaseSense := 0
@@ -47,10 +49,11 @@ importConfig() { ; credits to the Natro Macro team for the structure/code
         , "ClickDelay", 250
         , "FinishOrderDelay", 2000
         , "ImageSearchDelay", 100
+        , "IgnoreUpdateVersion", ""
         )
     config["Advanced"] := Map("ToppingDelay1", 100
         , "ToppingDelay2", 250
-        , "OrderTimeout", 30
+        , "OrderTimeout", 20
         , "Lettuce", 20
         , "Tomato", 50
         , "Beef", 10
@@ -66,21 +69,22 @@ importConfig() { ; credits to the Natro Macro team for the structure/code
         , "OffsetX", 20
         , "OffsetY", 8
         )
-    config["Status"] := Map("DiscordEnabled", 0
-        , "DiscordMode", "Webhook"
-        , "LastStartTime", "Never"
+    config["Status"] := Map("LastStartTime", "Never"
         , "ErrorCount", 0
         , "CurrentStatus", ""
         , "TotalRuntime", 0
         , "TotalOrders", 0
-        , "Webhook", ""
-        , "BotToken", ""
-        , "ChannelID", ""
-        , "CommandPrefix", "!"
-        , "UserID", ""
         )
-    config["Gui"] := Map("GuiX", 100
-        , "GuiY", 100
+    config["Discord"] := Map("DiscordEnabled", 0
+    , "DiscordMode", "Webhook"
+    , "Webhook", ""
+    , "BotToken", ""
+    , "ChannelID", ""
+    , "UserID", ""
+    , "GuildId", ""
+    )
+    config["Gui"] := Map("GuiX", (A_ScreenWidth//2) - 200
+        , "GuiY", (A_ScreenHeight//2) - 100
         , "AlwaysOnTop", 0
         , "DebugConsole", 0 ; future implementation
         , "DarkMode", 0
@@ -143,7 +147,7 @@ GetRobloxClientPos()
 (bitmaps := Map()).CaseSense := 0
 #Include "%A_ScriptDir%\..\images\bitmaps.ahk"
 ; ========== GUI =========
-version := "0.2.0"
+version := "0.3.0"
 OnExit(ExitFunc)
 MainGui := Gui((conf["AlwaysOnTop"] ? "+AlwaysOnTop " : "") "+Border +OwnDialogs", "Bloxburg Macro")
 MainGui.Show("x" conf["GuiX"] " y" conf["GuiY"] " w400 h200")
@@ -157,7 +161,7 @@ MainGui.Add("Button", "x5 y177 w65 h20 -Wrap Disabled vStartButton", "Start (" c
 MainGui.Add("Button", "x75 y177 w65 h20 -Wrap Disabled vPauseButton", "Pause (" conf["PauseKeybind"] ")").OnEvent("Click", pauseUI)
 MainGui.Add("Button", "x145 y177 w65 h20 -Wrap Disabled vStopButton", "Stop (" conf["StopKeybind"] ")").OnEvent("Click", stopUI)
 
-TabArr := ["Main", "Status", "Settings", "GUI", "Advanced"]
+TabArr := ["Main", "Status", "Discord", "Settings", "GUI", "Advanced"]
 (TabCtrl := MainGui.Add("Tab", "x0 y-1 w400 h240 -Wrap " (conf["DarkMode"] ? "cFFFFFF" : "c000000"), TabArr)).OnEvent("Change", (*) => TabCtrl.Focus())
 SendMessage 0x1331, 0, 20, , TabCtrl
 ; ========== Main Tab ==========
@@ -167,24 +171,8 @@ MainGui.Add("Text", "x125 y75 w126 +BackgroundTrans Center", "MORE JOB CHOICES C
 ; ========== Status Tab ==========
 TabCtrl.UseTab("Status")
 MainGui.SetFont("w700 Underline")
-MainGui.Add("Text", "x190 y70 w200 +BackgroundTrans", "DISCORD LOGS COMING SOON, feel free to config for now :3")
-MainGui.Add("Text", "x4 y24 w126 +BackgroundTrans", "Discord Settings:")
 MainGui.Add("Text", "x5 y105 w126 +BackgroundTrans", "Stats:")
 MainGui.SetFont("s8 cDefault Norm", "Tahoma")
-MainGui.Add("Text", "x110 y25 w126 +BackgroundTrans", "Enable Discord:")
-(GuiCtrl := MainGui.Add("CheckBox", "x190 y25 w15 h15 vDiscordEnabled Checked" conf["DiscordEnabled"], "")).Section:="Status", GuiCtrl.OnEvent("Click", saveConfig)
-MainGui.Add("Text", "x210 y25 w126 +BackgroundTrans", "Discord Mode:")
-MainGui.Add("Button", "x277 y25 w12 h16 +Center vDiscordModeLeft", "<").OnEvent("Click", switchDiscordMode)
-MainGui.Add("Button", "x342 y25 w12 h16 +Center vDiscordModeRight", ">").OnEvent("Click", switchDiscordMode)
-MainGui.Add("Text", "x290 y26 w50 +BackgroundTrans +Center vDiscordMode", conf["DiscordMode"])
-MainGui.Add("Text", "x5 y48 w90 +BackgroundTrans vUserIDLabel", "User ID:")
-(GuiCtrl := MainGui.Add("Edit", "x65 y48 w120 h20 vUserID", conf["UserID"])).Section := "Status", GuiCtrl.OnEvent("Change", saveConfig)
-MainGui.Add("Text", "x5 y78 w90 +BackgroundTrans vChannelIDLabel", "Channel ID:")
-(GuiCtrl := MainGui.Add("Edit", "x65 y78 w120 h20 -Multi vChannelID", conf["ChannelID"])).Section := "Status", GuiCtrl.OnEvent("Change", saveConfig)
-MainGui.Add("Text", "x5 y78 w90 +BackgroundTrans vWebhookLabel", "Webhook:")
-(GuiCtrl := MainGui.Add("Edit", "x65 y78 w120 h20 -Multi vWebhook", conf["Webhook"])).Section := "Status", GuiCtrl.OnEvent("Change", saveConfig)
-MainGui.Add("Text", "x190 y48 w90 +BackgroundTrans vBotTokenLabel", "Bot Token:")
-(GuiCtrl := MainGui.Add("Edit", "x250 y48 w120 h20 -Multi vBotToken", conf["BotToken"])).Section := "Status", GuiCtrl.OnEvent("Change", saveConfig)
 updateDiscordFields()
 MainGui.Add("Text", "x15 y120 w100 +BackgroundTrans", "Failed Orders:")
 MainGui.Add("Text", "x115 y120 w100 +BackgroundTrans vErrorCount", conf["ErrorCount"])
@@ -194,9 +182,27 @@ MainGui.Add("Text", "x200 y120 w100 +BackgroundTrans", "Total Runtime:")
 MainGui.Add("Text", "x300 y120 w100 +BackgroundTrans vTotalRuntime", conf["TotalRuntime"])
 MainGui.Add("Text", "x200 y140 w100 +BackgroundTrans", "Last Start:")
 MainGui.Add("Text", "x260 y140 w120 +BackgroundTrans vLastStartTime", conf["LastStartTime"])
-MainGui.Add("Text", "x0 y100 w400 h1 0x7")
-MainGui.Add("Text", "x0 y40 w105 h1 0x7")
-MainGui.Add("Text", "x105 y20 w1 h20 0x7")
+; ========== Discord Tab ==========
+TabCtrl.UseTab("Discord")
+MainGui.SetFont("w700 Underline")
+MainGui.Add("Text", "x4 y24 w126 +BackgroundTrans", "Discord Settings:")
+MainGui.SetFont("s8 cDefault Norm", "Tahoma")
+MainGui.Add("Text", "x110 y25 w126 +BackgroundTrans", "Enable Discord:")
+(GuiCtrl := MainGui.Add("CheckBox", "x190 y25 w15 h15 vDiscordEnabled Checked" conf["DiscordEnabled"], "")).Section:="Discord", GuiCtrl.OnEvent("Click", saveConfig)
+MainGui.Add("Text", "x210 y25 w126 +BackgroundTrans", "Discord Mode:")
+MainGui.Add("Button", "x277 y25 w12 h16 +Center vDiscordModeLeft", "<").OnEvent("Click", switchDiscordMode)
+MainGui.Add("Button", "x342 y25 w12 h16 +Center vDiscordModeRight", ">").OnEvent("Click", switchDiscordMode)
+MainGui.Add("Text", "x290 y26 w50 +BackgroundTrans +Center vDiscordMode", conf["DiscordMode"])
+MainGui.Add("Text", "x5 y48 w90 +BackgroundTrans vUserIDLabel", "User ID:")
+(GuiCtrl := MainGui.Add("Edit", "x65 y48 w120 h20 vUserID", conf["UserID"])).Section := "Discord", GuiCtrl.OnEvent("Change", saveConfig)
+MainGui.Add("Text", "x5 y78 w90 +BackgroundTrans vChannelIDLabel", "Channel ID:")
+(GuiCtrl := MainGui.Add("Edit", "x65 y78 w120 h20 -Multi vChannelID", conf["ChannelID"])).Section := "Discord", GuiCtrl.OnEvent("Change", saveConfig)
+MainGui.Add("Text", "x5 y78 w90 +BackgroundTrans vWebhookLabel", "Webhook:")
+(GuiCtrl := MainGui.Add("Edit", "x65 y78 w120 h20 -Multi Password vWebhook", conf["Webhook"])).Section := "Discord", GuiCtrl.OnEvent("Change", saveConfig)
+MainGui.Add("Text", "x190 y48 w90 +BackgroundTrans vBotTokenLabel", "Bot Token:")
+(GuiCtrl := MainGui.Add("Edit", "x250 y48 w120 h20 -Multi Password vBotToken", conf["BotToken"])).Section := "Discord", GuiCtrl.OnEvent("Change", saveConfig)
+MainGui.Add("Text", "x190 y78 w90 +BackgroundTrans vGuildIdLabel", "Guild ID:")
+(GuiCtrl := MainGui.Add("Edit", "x250 y78 w120 h20 -Multi vGuildId", conf["GuildId"])).Section := "Discord", GuiCtrl.OnEvent("Change", saveConfig)
 ; ========== Settings Tab ==========
 TabCtrl.UseTab("Settings")
 MainGui.SetFont("w700 Underline")
@@ -210,7 +216,7 @@ MainGui.Add("Text", "x10 y75 w110 +BackgroundTrans", "Stop Keybind:")
 MainGui.Add("Text", "x10 y100 w110 +BackgroundTrans", "Time Limit (min):")
 (GuiCtrl := MainGui.Add("Edit", "x110 y98 w60 Number vtimeLimMins", conf["timeLimMins"])).Section := "Settings", GuiCtrl.OnEvent("Change", saveConfig)
 MainGui.Add("Text", "x30 y125 +BackgroundTrans", "Auto Close Roblox")
-(GuiCtrl := MainGui.Add("CheckBox", "x10 y125 w15 h15 vAutoCloseRoblox Checked" conf["AutoCloseRoblox"], "")).Section:="Status", GuiCtrl.OnEvent("Click", saveConfig)
+(GuiCtrl := MainGui.Add("CheckBox", "x10 y125 w15 h15 vAutoCloseRoblox Checked" conf["AutoCloseRoblox"], "")).Section:="Settings", GuiCtrl.OnEvent("Click", saveConfig)
 MainGui.Add("Text", "x200 y25 w110 +BackgroundTrans", "Click Delay (ms):")
 (GuiCtrl := MainGui.Add("Edit", "x300 y23 w60 Number vClickDelay", conf["ClickDelay"])).Section := "Settings", GuiCtrl.OnEvent("Change", saveConfig)
 MainGui.Add("Text", "x200 y50 w110 +BackgroundTrans", "Finish Order Delay:")
@@ -231,11 +237,12 @@ MainGui.SetFont("w700 Underline")
 ; This will be moved to Main gui when there's multiple jobs.
 colX := [5, 136, 268]
 rowY := 25
-rowHeight := 21
+rowHeight := 22
 
 fields := [
-    "Beef", "Cheese", "Drink", "Fries", "Juice", "Lettuce",
-    "Onion", "Rings", "Shake", "Sticks", "Tomato", "Veggie",
+    "Lettuce", "Tomato", "Beef", "Veggie", "Cheese", "Onion",
+    "Fries", "Sticks", "Rings",
+    "Drink", "Juice", "Shake",
     "OffsetX", "OffsetY", "OrderTimeout", "ToppingDelay1", "ToppingDelay2"
 ]
 
@@ -256,6 +263,31 @@ loop fields.Length {
 ; ========== Global Variables ==========
 macroStatus := 1
 macroStart := 0
+sessionBuilt := 0
+sessionMoney := 0
+; ========== ` Setup ==========
+exe_path32 := A_AhkPath
+exe_path64 := (A_Is64bitOS && FileExist("submacros\AutoHotkey64.exe")) ? (A_WorkingDir "\submacros\AutoHotkey64.exe") : A_AhkPath
+CloseScripts(hb:=0) {
+	list := WinGetList("ahk_class AutoHotkey ahk_exe " exe_path32)
+	if (exe_path32 != exe_path64)
+		list.Push(WinGetList("ahk_class AutoHotkey ahk_exe " exe_path64)*)
+	for hwnd in list
+		if !((hwnd = A_ScriptHwnd) || ((hb = 1) && A_Args.Has(2) && (hwnd = A_Args[2])))
+			try WinClose "ahk_id " hwnd
+}
+LoadStatusScript() { ; used to either launch or reload the Status.ahk script
+    static path:=A_WorkingDir "\submacros\Status.ahk"
+    DetectHiddenWindows 1
+    if (hwnd := WinExist("Status.ahk ahk_class AutoHotkey"))
+        WinClose("ahk_id " hwnd)
+    Run(
+'"' exe_path64 '" /script "' A_WorkingDir '\submacros\Status.ahk" '
+'"' conf["DiscordMode"] '" "' conf["DiscordEnabled"] '" "' conf["Webhook"] '" "' conf["BotToken"] '" "' conf["ChannelID"] '" "' conf["GuildId"] '"')
+    DetectHiddenWindows 0
+}
+CloseScripts(1)
+LoadStatusScript()
 ; ========== Finished Loading ==========
 setStatus("loaded!")
 TabCtrl.Focus()
@@ -264,14 +296,16 @@ MainGui["PauseButton"].Enabled := 1
 MainGui["StopButton"].Enabled := 1
 SetWindowTheme(MainGui, conf["DarkMode"])
 SetWindowAttribute(MainGui, conf["DarkMode"])
+try AsyncHttpRequest("GET", "https://api.github.com/repos/DullSmallmega176/BloxburgMacro/releases/latest", checkForUpdate, Map("accept", "application/vnd.github+json"))
 ; ========== GUI Functions ==========
 switchDiscordMode(GuiCtrl, *) {
     global conf
     static val := ["Webhook", "Bot"], l := val.Length
     i := (conf["DiscordMode"] = "Bot" ? 2:1)
     MainGui["DiscordMode"].Text := conf["DiscordMode"] := val[(GuiCtrl.Name = "DiscordModeRight") ? (Mod(i, l) + 1): (Mod(l+i-2, l) +1)]
-    IniWrite conf["DiscordMode"], "settings\config.ini", "Status", "DiscordMode"
+    IniWrite conf["DiscordMode"], "settings\config.ini", "Discord", "DiscordMode"
     updateDiscordFields()
+    LoadStatusScript()
 }
 updateDiscordFields() {
     botEnabled := (conf["DiscordMode"] = "Bot") ? true:false, webhookEnabled := (conf["DiscordMode"] = "Webhook") ? true:false
@@ -279,6 +313,8 @@ updateDiscordFields() {
     MainGui["BotToken"].Visible := botEnabled
     MainGui["ChannelIDLabel"].Visible := botEnabled
     MainGui["ChannelID"].Visible := botEnabled
+    MainGui["GuildIdLabel"].Visible := botEnabled
+    MainGui["GuildId"].Visible := botEnabled
     MainGui["WebhookLabel"].Visible := webhookEnabled
     MainGui["Webhook"].Visible := webhookEnabled
     MainGui["UserIDLabel"].Visible := true
@@ -299,6 +335,8 @@ saveConfig(GuiCtrl, *) {
             conf[GuiCtrl.Name] := GuiCtrl.Value
     }
     IniWrite conf[GuiCtrl.Name], "settings\config.ini", GuiCtrl.Section, GuiCtrl.Name
+    if GuiCtrl.Name = "DiscordEnabled"
+        LoadStatusScript()
 }
 alwaysOnTop(GuiCtrl, *){
 	global
@@ -367,6 +405,10 @@ ExitFunc(*) {
         try IniWrite x, "settings\config.ini", "Gui", "GuiX"
     if y>0
         try IniWrite y, "settings\config.ini", "Gui", "GuiY"
+    DetectHiddenWindows 1
+    if (hwnd := WinExist("Status.ahk ahk_class AutoHotkey"))
+        WinClose("ahk_id " hwnd)
+    DetectHiddenWindows 0
     try Gdip_Shutdown(pToken)
     if macroStart
         updateValue("TotalRuntime", nowUnix() - macroStart, "Status")
@@ -381,7 +423,7 @@ stopUI(*) {
     return stopMacro()
 }
 startMacro(*) {
-    global macroStatus:=1, macroStart
+    global macroStatus:=1, macroStart, SessionBuilt
     if !GetRobloxClientPos() {
         msgbox "No Roblox found."
         return 0
@@ -392,7 +434,7 @@ startMacro(*) {
     setStatus("Starting!")
     macroStart := nowUnix(), orderSuccess := ""
     while (conf["AutoCloseRoblox"] = 0 || nowUnix()-macroStart < Round(conf["timeLimMins"]*60))
-        GetRobloxClientPos(),setStatus("order was a " ((successfulOrder:=orderBuilder())=1 ? "success":"fail")), (successfulOrder ? updateValue("TotalOrders",conf["TotalOrders"]+1, "Status"):updateValue("ErrorCount",conf["ErrorCount"]+1, "Status")), updateStats(), Sleep(100)
+        GetRobloxClientPos(),setStatus("End of Order: " ((success:=orderBuilder())=1 ? "success":"fail"), success?2879825:15665233), success?SessionBuilt++:"", (success ? updateValue("TotalOrders",conf["TotalOrders"]+1, "Status"):updateValue("ErrorCount",conf["ErrorCount"]+1, "Status")), updateStats(), Sleep(100)
     updateValue("TotalRuntime", nowUnix() - macroStart, "Status")
     closeRoblox()
     ExitApp()
@@ -412,7 +454,7 @@ stopMacro(*) {
         Hotkey conf["StopKeybind"], "Off"
     }
     Click "Up"
-    setStatus("Stopping!")
+    setStatus("Closing script!" (SessionBuilt!=0?("`n`nYou have earned " sessionMoney " money.`nYou have successfully completed " SessionBuilt " orders."):""))
     Reload
     Sleep 10000
 }
@@ -425,16 +467,93 @@ TextExtend(text, textCtrl) {
 	DllCall("ReleaseDC", "Ptr", textCtrl.Hwnd, "Ptr", hDC)
 	return NumGet(nSize, 0, "UInt")
 }
-setStatus(message) {
-    try {
-        MainGui["Status"].Text := message
-    }
+setStatus(message, color:=5066239) {
+    try MainGui["Status"].Text := message
     try IniWrite message, "settings\config.ini", "Status", "CurrentStatus"
+    DetectHiddenWindows 1
+    if (WinExist("Status.ahk ahk_class AutoHotkey"))
+        try SendMessage 0xC2, color, StrPtr(message)
+    DetectHiddenWindows 0
 }
 updateValue(var, val, section) {
     global conf
     try conf[var] := val
     try IniWrite val, "settings\config.ini", section, var
+}
+checkForUpdate(req) {
+    global
+    if req.readyState != 4
+        return
+    if req.status = 200 {
+        LatestVer := Trim((latest_release := JSON.parse(req.responseText))["tag_name"], "v")
+        if (VerCompare(version, LatestVer) < 0) {
+            if LatestVer != conf["IgnoreUpdateVersion"]
+                UpdateMacroGUI()
+        }
+    }
+}
+UpdateMacroGUI() { ; credits to the Natro Macro team for the structure/code
+    global
+    local UpdateText, GuiCtrl
+    GuiClose(*) {
+        if (IsSet(UpdateGui) && IsObject(UpdateGui))
+            UpdateGui.Destroy(), UpdateGui:=""
+    }
+    GuiClose()
+    UpdateGui := Gui("+Border +Owner" MainGui.Hwnd " -MinimizeBox", "Bloxburg Macro Update")
+    UpdateGui.OnEvent("Close", GuiClose), UpdateGui.OnEvent("Escape", GuiClose)
+    UpdateGui.SetFont("s9 cDefault Norm " (conf["DarkMode"] ? "cFFFFFF" : "c000000"), "Tahoma")
+    UpdateText := UpdateGui.Add("Text", "x20 w260 +Center +BackgroundTrans", "A newer version of Bloxburg Macro was found!`nAre you interested in downloading it?")
+    posW := TextExtend("Bloxburg Macro v" version " -> v" LatestVer, UpdateText)
+    UpdateGui.SetFont("s9")
+    UpdateGui.Add("Button", "x9 y+12 w92 w100", "Never").OnEvent("Click", neverAction)
+    UpdateGui.Add("Button", "x9 y+12 w92 w100", "Dismiss").OnEvent("Click", dismissAction)
+    (GuiCtrl := UpdateGui.Add("Button", "x9 y+12 w100 h26", "Github Download")).OnEvent("Click", updateAction)
+    UpdateGui.Show("w290 h168")
+    GuiCtrl.Focus()
+    SetWindowTheme(UpdateGui, conf["DarkMode"])
+    SetWindowAttribute(UpdateGui, conf["DarkMode"])
+    WinWaitClose "ahk_id " UpdateGui.Hwnd, , 125
+    GuiClose()
+}
+neverAction(*) {
+    global UpdateGui
+    if (MsgBox(
+    (
+    "Are you sure you want to ignore version " LatestVer "?
+    You can go download the update manually as always in the github page.
+    
+    This message will appear again when there is a new release."
+    ), "Disable Automatic Update", 0x1044 " Owner" UpdateGui.Hwnd) = "Yes") {
+        IniWrite (conf["IgnoreUpdateVersion"] := LatestVer), "settings\config.ini", "Settings", "IgnoreUpdateVersion"
+        UpdateGui.Destroy(), UpdateGui := ""
+    }
+}
+dismissAction(*) {
+    global UpdateGui
+    UpdateGui.Destroy(), UpdateGui:=""
+}
+updateAction(*) {
+    global UpdateGui
+    if (MsgBox(
+    (
+    "I trust you on this.
+    
+    Just in case, would you like to disable the notifications for this macro in this current version?"
+    ), "Disable Automatic Update", 0x1044 " Owner" UpdateGui.Hwnd) = "Yes") {
+        IniWrite (conf["IgnoreUpdateVersion"] := LatestVer), "settings\config.ini", "Settings", "IgnoreUpdateVersion"
+        UpdateGui.Destroy(), UpdateGui := ""
+    }
+    Run "https://github.com/DullSmallmega176/BloxburgMacro/releases"
+}
+AsyncHttpRequest(method, url, func?, headers?) {
+	req := ComObject("Msxml2.XMLHTTP")
+	req.open(method, url, true)
+	if IsSet(headers)
+		for h, v in headers
+			req.setRequestHeader(h, v)
+	IsSet(func) && (req.onreadystatechange := func.Bind(req))
+	req.send()
 }
 ; ========== Order Functions ==========
 genericItem(items, threshold) { ; detects both the side or drink, combined because smaller
@@ -476,14 +595,13 @@ toppingAmount(coords) { ; just used by burgerItems(), detects the amount of one 
     return amount
 }
 orderFinished(clear?) { ; 1=NPC finished ordering, 0=still ordering
-    static ran:=0
+    static ran:=nowUnix()
     if IsSet(clear)
-        return ran:=0
-    ran++
+        return ran:=nowUnix()
     pBMScreen := Gdip_BitmapFromScreen(windowX+(windowWidth/2)-200 "|" windowY+(windowHeight/2)-270 "|420|160")
     isEnd := 0
-    if (Gdip_ImageSearch(pBMScreen, bitmaps["question"],,,,,,15)) || ran>=conf["OrderTimeout"]
-        isEnd := 1, ran:=0, setStatus("Order is finished!")
+    if (Gdip_ImageSearch(pBMScreen, bitmaps["question"],,,,,,15)) || nowUnix()-ran>=conf["OrderTimeout"]
+        isEnd := 1, ran:=nowUnix()
     Gdip_DisposeImage(pBMScreen)
     return isEnd
 }
@@ -493,7 +611,7 @@ orderBuilder() { ; returns if the order was a success or fail, 1=yes, 0=no, -1=e
         for item in ["burger", "side", "drink"] {
             if done[item]
                 continue
-            sleep 300
+            sleep 100
             if (order := %item "Item"%()) {
                 done[item]:=1
                 if !built[item] {
@@ -506,7 +624,7 @@ orderBuilder() { ; returns if the order was a success or fail, 1=yes, 0=no, -1=e
                 }
             }
         }
-        sleep 200
+        sleep 100
     }
     ClickAt(1858, 710) ; confirm order
     sleep 750 ; to check if success or not
@@ -514,10 +632,11 @@ orderBuilder() { ; returns if the order was a success or fail, 1=yes, 0=no, -1=e
     success := ((Gdip_ImageSearch(pBMScreen, bitmaps["success"],,,,,,5)) ? 1 : (Gdip_ImageSearch(pBMScreen, bitmaps["fail"],,,,,,5)) ? 0 : 0)
     Gdip_DisposeImage(pBMScreen)
     sleep conf["FinishOrderDelay"]
+    success ? "":Sleep(300)
     return success
 }
 buildBurger(order) { ; builds the whole burger.
-    setStatus("Building Burger !")
+    setStatus("Building: Burger")
     if !order
         return
     ClickAt(1858, 380) ; burger builder
@@ -531,7 +650,7 @@ buildBurger(order) { ; builds the whole burger.
     ClickAt(1665, 350) ; top bun
 }
 buildGeneric(itemType, order) { ; builds both the side or drink, combined because smaller
-    setStatus("Building " itemType "!")
+    setStatus("Building: " StrTitle(itemType))
     if !order
         return
     ClickAt(1858, (itemType = "side" ? 490:600)) ; 600 is drink

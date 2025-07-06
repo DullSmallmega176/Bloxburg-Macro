@@ -46,8 +46,14 @@ YOU CAN IGNORE EVERYTHING ELSE UNDER THIS, Used for github.
 #### MacroDev(s)
  - [Dully176](https://discord.com/users/522940239904243712)
 
+#### Most Functions and Code Structure
+ - [NatroTeam](https://github.com/NatroTeam) - Structures of "GUI, Auto update, Config, Status.ahk". I really love how it was done so why waste time on re-inventing the wheel.
+
 #### Libraries
- - [Gdip_All.ahk](https://github.com/marius-sucan/AHK-GDIp-Library-Compilation/blob/master/ahk-v1-1/Gdip_All.ahk) Originally created by many users. currently using an ahk v2.0 translation in [this repository](https://github.com/buliasz/AHKv2-Gdip) (the file from this macro in [Natro Macro](https://github.com/NatroTeam/NatroMacro))
- - [Gdip_ImageSearch.ahk](https://github.com/MasterFocus/AutoHotkey/blob/master/Functions/Gdip_ImageSearch/Gdip_ImageSearch.ahk) translated by [SP](https://github.com/zspz) 
- - [Roblox.ahk](https://github.com/NatroTeam/NatroMacro/blob/main/lib/Roblox.ahk) Originally created by [SP](https://github.com/zspz) , also a function named closeRoblox() made by the [Natro Team](https://github.com/NatroTeam).
+ - [Gdip_All.ahk](https://github.com/marius-sucan/AHK-GDIp-Library-Compilation/blob/master/ahk-v1-1/Gdip_All.ahk) Originally created by many users. currently using an ahk v2.0 translation from [this repository](https://github.com/buliasz/AHKv2-Gdip)
+ - [Gdip_ImageSearch.ahk](https://github.com/MasterFocus/AutoHotkey/blob/master/Functions/Gdip_ImageSearch/Gdip_ImageSearch.ahk) Originally made by [MasterFocus](https://github.com/MasterFocus) and [mmikeww](https://github.com/mmikeww), translated by [SP](https://github.com/zspz/Gdip_ImageSearch) 
+ - [Roblox.ahk](https://github.com/NatroTeam/NatroMacro/blob/main/lib/Roblox.ahk) created by [SP](https://github.com/zspz), Edited to include a function made by the [Natro Team](https://github.com/NatroTeam).
  - [DarkMode.ahk](https://www.autohotkey.com/boards/viewtopic.php?t=115952) Found this when searching up for dark mode stuff, works really good.
+ - [JSON.ahk](https://github.com/Chunjee/json.ahk) made by [Chunjee](https://github.com/Chunjee)
+ - Discord Library made by [ninjubaer](https://github.com/ninjubaer), Edited to include EditMessage.
+ - [WebSockets.ahk](https://github.com/thqby/ahk2_lib) made by [thqby](https://github.com/thqby)
